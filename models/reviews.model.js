@@ -1,17 +1,13 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const CategorySchema = new Schema({
-  name: {
+const ReviewSchema = new Schema({
+  message: {
     type: String,
     required: true,
   },
-  image: {
-    type: String,
-    default: null,
-  },
-  description: {
-    type: String,
+  rating: {
+    type: Number,
     required: true,
   },
   status: {
@@ -24,4 +20,4 @@ const CategorySchema = new Schema({
   },
 });
 
-export default mongoose.model("category", CategorySchema);
+export default mongoose.model("review", ReviewSchema);

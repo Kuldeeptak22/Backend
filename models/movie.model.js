@@ -1,41 +1,66 @@
 import mongoose from "mongoose";
+import CategoryModel from "./category.model";
+import ZoneModel from './zone.model'
+import ReviewModel from './reviews.model'
 const Schema = mongoose.Schema;
 
 const MovieShema = new Schema({
-  movieTitle: {
+  title: {
     type: String,
     required: true,
   },
-  movieDuration: {
+  duration: {
     type: String,
     required: true,
   },
-  moviePoster: {
+  poster: {
     type: String,
     default: null,
   },
-  movieReleaseDate: {
-    type: String,
-    required: true,
-  },
-  movieViews: {
-    type: String,
-    required: true,
-  },
-  movieLikes: {
-    type: String,
-    required: true,
-  },
-  movieCategory: {
+  zone: {
     type: Schema.Types.ObjectId,
     required: true,
-    // ref:CategoryModel
+    ref: ZoneModel,
   },
-  movieRating: {
+  language: {
     type: String,
     required: true,
   },
-  movieCategory: {
+  trailorUrl: {
+    type: String,
+    required: true,
+  },
+  releaseDate: {
+    type: String,
+    required: true,
+  },
+  views: {
+    type: Number,
+    required: true,
+  },
+  likes: {
+    type: Number,
+    required: true,
+  },
+  category: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: CategoryModel,
+  },
+  review: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: ReviewModel,
+  },
+  rating: {
+    type: Number,
+    required: true,
+  },
+  cast: {
+    type: Array,
+    required: true,
+  },
+  director: {
     type: String,
     required: true,
   },

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const CategorySchema = new Schema({
+const ZoneShema = new Schema({
   name: {
     type: String,
     required: true,
@@ -24,4 +24,4 @@ const CategorySchema = new Schema({
   },
 });
 
-export default mongoose.model("category", CategorySchema);
+export default mongoose.model("zone", ZoneShema);
