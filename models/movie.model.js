@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import CategoryModel from "./category.model";
-import ZoneModel from './zone.model'
-import ReviewModel from './reviews.model'
+import ZoneModel from "./zone.model";
+import ReviewModel from "./reviews.model";
 const Schema = mongoose.Schema;
 
 const MovieShema = new Schema({
@@ -14,6 +14,14 @@ const MovieShema = new Schema({
     required: true,
   },
   poster: {
+    type: String,
+    default: null,
+  },
+  thumbnail: {
+    type: String,
+    default: null,
+  },
+  movieLogo: {
     type: String,
     default: null,
   },

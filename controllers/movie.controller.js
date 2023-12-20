@@ -9,7 +9,11 @@ const upload = multer({
 
 export const addMovie = (req, res) => {
   try {
-    const uploadMovieData = upload.single("poster");
+    const uploadMovieData = upload.fields([
+      { name: "thumbnail", maxCount: 1 },
+      { name: "poster", maxCount: 1 },
+      { name: "movieLogo", maxCount: 1 },
+    ]);
     uploadMovieData(req, res, async function (error) {
       if (error) {
         return res.status(400).json({
@@ -17,13 +21,26 @@ export const addMovie = (req, res) => {
         });
       }
 
+      let thumbnailImage = null;
       let poster = null;
-      if (req.file != undefined) {
-        poster = req.file.filename;
+      let movieLogo = null;
+      if (req.files["thumbnail"]) {
+        thumbnailImage = req.files["thumbnail"][0].filename;
       }
+
+      if (req.files["poster"]) {
+        poster = req.files["poster"][0].filename;
+      }
+
+      if (req.files["movieLogo"]) {
+        movieLogo = req.files["movieLogo"][0].filename;
+      }
+
       const saveMovie = await MovieModel.create({
         ...req.body,
         poster: poster,
+        thumbnail: thumbnailImage,
+        movieLogo: movieLogo,
       });
 
       if (saveMovie) {
@@ -137,7 +154,10 @@ export const getMovie = async (req, res) => {
     const movie = await MovieModel.findOne({
       status: 1,
       _id: movieID,
-    });
+    })
+      .populate("category")
+      .populate("zone");
+
     if (movie) {
       return res.status(200).json({
         data: movie,
@@ -153,7 +173,11 @@ export const getMovie = async (req, res) => {
 };
 export const updateMovie = async (req, res) => {
   try {
-    const updateMovieData = upload.single("poster");
+    const updateMovieData = upload.fields([
+      { name: "thumbnail", maxCount: 1 },
+      { name: "poster", maxCount: 1 },
+      { name: "movieLogo", maxCount: 1 },
+    ]);
     updateMovieData(req, res, async function (error) {
       if (error) {
         return res.status(400).json({
@@ -182,10 +206,26 @@ export const updateMovie = async (req, res) => {
       });
 
       let poster = existMovie.poster;
-      if (req.file) {
-        poster = req.file.filename;
+      let thumb = existMovie.thumbnail;
+      let movieLogo = existMovie.movieLogo;
+
+      let thumbnailImage = thumb;
+      if (req.files["thumbnail"]) {
+        thumbnailImage = req.files["thumbnail"][0].filename;
+        if (fs.existsSync("./uploads/movies/" + existMovie.thumbnail)) {
+          fs.unlinkSync("./uploads/movies/" + existMovie.thumbnail);
+        }
+      }
+      if (req.files["poster"]) {
+        poster = req.files["poster"][0].filename;
         if (fs.existsSync("./uploads/movies/" + existMovie.poster)) {
           fs.unlinkSync("./uploads/movies/" + existMovie.poster);
+        }
+      }
+      if (req.files["movieLogo"]) {
+        movieLogo = req.files["movieLogo"][0].filename;
+        if (fs.existsSync("./uploads/movies/" + existMovie.movieLogo)) {
+          fs.unlinkSync("./uploads/movies/" + existMovie.movieLogo);
         }
       }
       const updatedMovie = await MovieModel.updateOne(
@@ -206,7 +246,9 @@ export const updateMovie = async (req, res) => {
             director,
             shortDescription,
             description,
-            poster
+            poster,
+            thumbnail: thumbnailImage,
+            movieLogo,
           },
         }
       );
@@ -223,50 +265,56 @@ export const updateMovie = async (req, res) => {
   }
 };
 export const deleteMovie = async (req, res) => {
-    try {
-      const movieID = req.params.movie_id;
-      const deletedMovie = await MovieModel.updateOne(
-        { _id: movieID },
-        {
-          $set: {
-            status: 0,
-          },
-        }
-      );
-      if (deletedMovie.acknowledged) {
-        return res.status(200).json({
-          message: "Item has been Successfully Deleted..!",
-        });
+  try {
+    const movieID = req.params.movie_id;
+    const deletedMovie = await MovieModel.updateOne(
+      { _id: movieID },
+      {
+        $set: {
+          status: 0,
+        },
       }
-    } catch (error) {
-      return res.status(500).jason({
-        message: error.message,
+    );
+    if (deletedMovie.acknowledged) {
+      return res.status(200).json({
+        message: "Item has been Successfully Deleted..!",
       });
     }
+  } catch (error) {
+    return res.status(500).jason({
+      message: error.message,
+    });
+  }
 };
 export const removeMovie = async (req, res) => {
-    try {
-      const movieID = req.params.movie_id;
-      const existMovie = await MovieModel.findOne({
-        _id: movieID,
-      });
+  try {
+    const movieID = req.params.movie_id;
+    const existMovie = await MovieModel.findOne({
+      _id: movieID,
+    });
 
-      if (fs.existsSync("uploads/movies/" + existMovie.poster)) {
-        fs.unlinkSync("uploads/movies/" + existMovie.poster);
-      }
+    if (fs.existsSync("uploads/movies/" + existMovie.poster)) {
+      fs.unlinkSync("uploads/movies/" + existMovie.poster);
+    }
+    if (fs.existsSync("uploads/movies/" + existMovie.thumbnail)) {
+      fs.unlinkSync("uploads/movies/" + existMovie.thumbnail);
+    }
+    if (fs.existsSync("uploads/movies/" + existMovie.movieLogo)) {
+      fs.unlinkSync("uploads/movies/" + existMovie.movieLogo);
+    }
 
-      const deletedMovie = await MovieModel.deleteOne({
-        _id: movieID,
-      });
+    const deletedMovie = await MovieModel.deleteOne({
+      _id: movieID,
+    });
 
-      if (deletedMovie.acknowledged) {
-        return res.status(200).json({
-          message: "Item has been Successfully Deleted..!",
-        });
-      }
-    } catch (error) {
-      return res.status(500).json({
-        message: error.message,
+    if (deletedMovie.acknowledged) {
+      return res.status(200).json({
+        message: "Item has been Successfully Deleted..!",
       });
     }
-  };
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
