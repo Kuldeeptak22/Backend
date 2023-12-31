@@ -10,6 +10,7 @@ import reviewRouter from "./routers/reviews.router";
 import movieRouter from "./routers/movie.router";
 import seasonRouter from "./routers/season.router";
 import tvShowRouter from "./routers/tvShow.router";
+import userRouter from "./routers/user.router";
 
 const app = express();
 app.use(cors()); // To avaoid cors errors genereated Through cross plateforms (differents ports access)
@@ -45,3 +46,4 @@ app.use("/reviews", reviewRouter);
 app.use("/movies", movieRouter);
 app.use("/seasons", seasonRouter);
 app.use("/tvShows", tvShowRouter);
+app.use("/users", userRouter);
