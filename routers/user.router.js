@@ -1,6 +1,7 @@
 import express from "express";
 import {
   addUser,
+  checkOTPinUserModel,
   createAndSendOTP,
   deleteUser,
   getUser,
@@ -27,5 +28,6 @@ router.post("/sign_in", signInUser);
 // Send OTP
 router.post("/send_otp", createAndSendOTP);
 router.post("/signIn_with_otp", signInWithOTP);
+router.post("/check_otp_in_user_model", checkOTPinUserModel);
 
 export default router;

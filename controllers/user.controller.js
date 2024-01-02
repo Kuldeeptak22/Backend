@@ -106,7 +106,7 @@ export const updateUser = async (req, res) => {
       const userID = req.params.user_id;
       const { firstName, lastName, email, password, gender, contact } =
         req.body;
-
+    
       const existUser = await UserModel.findOne({
         _id: userID,
       });
@@ -121,20 +121,20 @@ export const updateUser = async (req, res) => {
       }
 
       if (password) {
-        const strongPassword = validator.isStrongPassword(password);
+        // const strongPassword = validator.isStrongPassword(password);
         const hashedPassword = bcrypt.hashSync(password, 10);
 
-        const validEmail = validator.isEmail(email);
-        if (!validEmail) {
-          return res.status(400).json({
-            message: "Email is not valid..!",
-          });
-        } else if (!strongPassword) {
-          return res.status(400).json({
-            message:
-              "minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1",
-          });
-        }
+        // const validEmail = validator.isEmail(email);
+        // if (!validEmail) {
+        //   return res.status(400).json({
+        //     message: "Email is not valid..!",
+        //   });
+        // } else if (!strongPassword) {
+        //   return res.status(400).json({
+        //     message:
+        //       "minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1",
+        //   });
+        // }
         const updatedUser = await UserModel.updateOne(
           { _id: userID },
           {
@@ -450,6 +450,59 @@ export const signInWithOTP = async (req, res) => {
           message: "Session has been expired..!!",
         });
       }
+    }
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+export const checkOTPinUserModel = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+
+    const existUser = await OtpModel.findOne({
+      otp: otp,
+      email: email,
+    });
+
+    if (existUser && existUser.id !== undefined) {
+      // OTP expiration duration is valid or not
+      const CurrentTime = new Date();
+      const expirationTime = 2;
+
+      const CheckTimeLimitation =
+        CurrentTime - existUser.createdAt < expirationTime * 60 * 1000;
+
+      if (CheckTimeLimitation === true) {
+        // =========
+        const existUser1 = await UserModel.findOne({
+          email: email,
+        });
+        if (existUser1 && existUser1.id !== undefined) {
+          return res.status(200).json({
+            data: existUser1,
+            message: "OTP Verified Successfully...!!",
+          });
+        } else {
+          return res.status(200).json({
+            message: "User Not Found...!!",
+          });
+        }
+      } else {
+        const toDeleteOtpData = await OtpModel.deleteOne({
+          _id: existUser.id,
+        });
+        if (toDeleteOtpData.acknowledged === true) {
+          return res.status(200).json({
+            message: "Session has been expired..!!",
+          });
+        }
+      }
+    } else {
+      return res.status(400).json({
+        message: "Email or OTP is not valid, please Enter valid data..!",
+      });
     }
   } catch (error) {
     return res.status(500).json({
