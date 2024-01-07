@@ -58,23 +58,26 @@ export const addMovie = (req, res) => {
 };
 export const getMovies = async (req, res) => {
   try {
-    const { page, size, search, sortFilter, zone } = req.query;
+    const { page, size, search, sortFilter, zone, category } = req.query;
     const skipNo = (page - 1) * size;
     const rgx = (pattern) => new RegExp(`.*${pattern}.*`);
     const searchRgx = rgx(search);
 
     let filter = { status: 1 };
+
+    if (category !== undefined) {
+      filter = {
+        ...filter,
+        category: category,
+      };
+    }
+
     if (search !== undefined) {
       filter = {
         ...filter,
         $or: [
           { title: { $regex: searchRgx, $options: "i" } },
-          { shortDescription: { $regex: searchRgx, $options: "i" } },
-          { description: { $regex: searchRgx, $options: "i" } },
           { language: { $regex: searchRgx, $options: "i" } },
-          { director: { $regex: searchRgx, $options: "i" } },
-          { cast: { $elemMatch: { $regex: searchRgx, $options: "i" } } },
-          { "zone.name": { $regex: searchRgx, $options: "i" } },
         ],
       };
     }
