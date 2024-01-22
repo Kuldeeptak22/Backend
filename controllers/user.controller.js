@@ -106,7 +106,7 @@ export const updateUser = async (req, res) => {
       const userID = req.params.user_id;
       const { firstName, lastName, email, password, gender, contact } =
         req.body;
-    
+
       const existUser = await UserModel.findOne({
         _id: userID,
       });
@@ -121,67 +121,47 @@ export const updateUser = async (req, res) => {
       }
 
       if (password) {
-        // const strongPassword = validator.isStrongPassword(password);
+        const strongPassword = validator.isStrongPassword(password);
         const hashedPassword = bcrypt.hashSync(password, 10);
 
-        // const validEmail = validator.isEmail(email);
-        // if (!validEmail) {
-        //   return res.status(400).json({
-        //     message: "Email is not valid..!",
-        //   });
-        // } else if (!strongPassword) {
-        //   return res.status(400).json({
-        //     message:
-        //       "minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1",
-        //   });
-        // }
-        const updatedUser = await UserModel.updateOne(
-          { _id: userID },
-          {
-            $set: {
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              password: hashedPassword,
-              gender: gender,
-              contact: contact,
-              avatar: newAvatar,
-            },
+        if (email) {
+          const validEmail = validator.isEmail(email);
+          if (!validEmail) {
+            return res.status(400).json({
+              message: "Email is not valid..!",
+            });
           }
-        );
-        if (updatedUser.acknowledged) {
-          return res.status(200).json({
-            message: "Item has Been Updated..!",
-          });
-        } else {
-          return res.status(500).json({
-            message: "Failed to update user.",
+        }
+
+        if (!strongPassword) {
+          return res.status(400).json({
+            message:
+              "minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1",
           });
         }
+      }
+      const updatedUser = await UserModel.updateOne(
+        { _id: userID },
+        {
+          $set: {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: hashedPassword,
+            gender: gender,
+            contact: contact,
+            avatar: newAvatar,
+          },
+        }
+      );
+      if (updatedUser.acknowledged) {
+        return res.status(200).json({
+          message: "Item has Been Updated..!",
+        });
       } else {
-        const updatedUser = await UserModel.updateOne(
-          { _id: userID },
-          {
-            $set: {
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              password: password,
-              gender: gender,
-              contact: contact,
-              avatar: newAvatar,
-            },
-          }
-        );
-        if (updatedUser.acknowledged) {
-          return res.status(200).json({
-            message: "Item has Been Updated..!",
-          });
-        } else {
-          return res.status(500).json({
-            message: "Failed to update user.",
-          });
-        }
+        return res.status(500).json({
+          message: "Failed to update user.",
+        });
       }
     });
   } catch (err) {
